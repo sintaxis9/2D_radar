@@ -1,9 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall -Iinclude
-LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
-SRC_DIR = src
+CXXFLAGS = -std=c++17 `pkg-config --cflags sfml-graphics` -Iinclude
+LDFLAGS = `pkg-config --libs sfml-graphics`
 BUILD_DIR = build
+
+SRC_DIR = src
 INCLUDE_DIR = include
+
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/Radar.o $(BUILD_DIR)/Object.o
 TARGET = radar_2d
 

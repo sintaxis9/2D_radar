@@ -10,8 +10,17 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:${pkgs.sfml}/lib/pkgconfig
-    export CXX=g++
-    export CC=gcc
+    echo "Generando archivo .clangd dinámico..."
+
+    echo "CompileFlags:" > .clangd
+    echo "  Add:" >> .clangd
+    echo "    - \"--std=c++17\"" >> .clangd
+    echo "    - \"$(pkg-config --cflags-only-I sfml-graphics | sed 's/-I/--include-directory=/')\"" >> .clangd
+    echo "    - \"$(pkg-config --libs-only-L sfml-graphics | sed 's/-L/--library-directory=/')\"" >> .clangd
+    echo "Diagnostics:" >> .clangd
+    echo "  MissingIncludes: Strict" >> .clangd
+    echo "  UnusedIncludes: Strict" >> .clangd
+
+    echo "Archivo .clangd generado con éxito."
   '';
 }
