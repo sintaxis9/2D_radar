@@ -7,13 +7,15 @@
 class Object {
 public:
     Object(std::string name, sf::Vector2f position, float radius);
-    void draw(sf::RenderWindow& window);
-    sf::Vector2f getPosition() const;
+
     std::string getName() const;
+    sf::Vector2f getPosition() const;
+    float getRadius() const;
 
 private:
     std::string name;
-    sf::CircleShape objectShape;
+    sf::Vector2f position;
+    float radius;
 };
 
 #endif

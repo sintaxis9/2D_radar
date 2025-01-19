@@ -1,22 +1,26 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall
-LDFLAGS = -L$(SFML_LIB) -lsfml-graphics -lsfml-window -lsfml-system
-EXEC = radar_2d
-SRC = src/main.cpp src/Radar.cpp src/Object.cpp
-OBJ = $(SRC:.cpp=.o)
+CXXFLAGS = -std=c++11 -Wall -Iinclude
+LDFLAGS = -lsfml-graphics -lsfml-window -lsfml-system
+SRC_DIR = src
+BUILD_DIR = build
+INCLUDE_DIR = include
+OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/Radar.o $(BUILD_DIR)/Object.o
+TARGET = radar_2d
 
-SFML_INCLUDE = $(shell nix-shell -p sfml --run "echo $SFML_INCLUDE_DIR")
-SFML_LIB = $(shell nix-shell -p sfml --run "echo $SFML_LIBRARY_DIR")
+all: $(TARGET)
 
-all: $(EXEC)
-$(EXEC): $(OBJ)
-	$(CXX) $(OBJ) -o $(EXEC) $(LDFLAGS)
+$(TARGET): $(OBJS)
+	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 
-%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) -I$(SFML_INCLUDE) $< -o $@
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INCLUDE_DIR)/%.h
+	mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/main.o: $(SRC_DIR)/main.cpp
+	mkdir -p $(BUILD_DIR)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(EXEC)
-fclean: clean
-	rm -f $(EXEC)
-re: fclean all
+	rm -rf $(BUILD_DIR) $(TARGET)
+
+.PHONY: all clean
