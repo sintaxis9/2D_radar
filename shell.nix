@@ -2,7 +2,6 @@
 
 pkgs.mkShell {
   name = "radar-2D";
-
   buildInputs = [
     pkgs.gcc
     pkgs.pkg-config
@@ -10,8 +9,6 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    echo "generando .clangd"
-
     echo "CompileFlags:" > .clangd
     echo "  Add:" >> .clangd
     echo "    - \"--std=c++17\"" >> .clangd
@@ -20,7 +17,5 @@ pkgs.mkShell {
     echo "Diagnostics:" >> .clangd
     echo "  MissingIncludes: Strict" >> .clangd
     echo "  UnusedIncludes: Strict" >> .clangd
-
-    echo ".clangd generado."
   '';
 }

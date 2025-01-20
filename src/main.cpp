@@ -2,18 +2,18 @@
 #include <vector>
 #include <ctime>
 #include <cstdlib>
-#include "Radar.h"
-#include "Object.h"
+#include "../include/Radar.h"
+#include "../include/Object.h"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(800, 600), "RADAR 2D");
+    sf::RenderWindow window(sf::VideoMode(1200, 600), "RADAR 2D"); /
     std::srand(static_cast<unsigned>(std::time(nullptr)));
-    Radar radar(sf::Vector2f(400, 300), 200);
+    Radar radar(sf::Vector2f(300, 300), 200);
 
     std::vector<Object> objects;
     for (int i = 0; i < 10; ++i) {
         sf::Vector2f randomPosition(
-            std::rand() % 800,
+            std::rand() % 600,
             std::rand() % 600
         );
         float randomRadius = 10 + std::rand() % 20;
@@ -41,6 +41,7 @@ int main() {
             window.draw(objectShape);
         }
         radar.draw(window);
+        radar.drawDetectionGrid(window);
         window.display();
     }
     return 0;

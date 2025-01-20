@@ -1,10 +1,9 @@
-#include "Radar.h"
+#include "../include/Radar.h"
 #include <iostream>
 #include <cmath>
 
 Radar::Radar(sf::Vector2f position, float radius)
     : position(position), radius(radius), scanAngle(0) {
-
     radarPoint.setRadius(5);
     radarPoint.setFillColor(sf::Color::Red);
     radarPoint.setOrigin(5, 5);
@@ -22,6 +21,15 @@ void Radar::update(float deltaTime) {
         scanAngle -= 360.0f;
     }
     radarLine.setRotation(scanAngle);
+
+    for (auto& detection : detections) {
+        detection.timer -= deltaTime;
+    }
+
+    detections.erase(
+        std::remove_if(detections.begin(), detections.end(),
+                       [](const Detection& d) { return d.timer <= 0; }),
+        detections.end());
 }
 
 void Radar::draw(sf::RenderWindow& window) {
@@ -43,31 +51,43 @@ void Radar::scan(const std::vector<Object>& objects) {
             float angleDifference = std::fmod(angleToObj - rayAngle, 2 * M_PI);
 
             if (std::abs(angleDifference) < 0.1f) {
-                std::cout << "colision detectada" << std::endl;
-                std::cout << "distancia: " << distance << " unidades" << std::endl;
-                float clockPosition = (angleToObj * 180.0f / M_PI);
-                clockPosition = std::fmod(clockPosition + 360.0f, 360.0f);
-                int hourMark = static_cast<int>((clockPosition / 30.0f));
-                std::string timeStr;
-
-                switch (hourMark) {
-                    case 0: timeStr = "3 en punto"; break;
-                    case 1: timeStr = "4 en punto"; break;
-                    case 2: timeStr = "5 en punto"; break;
-                    case 3: timeStr = "6 en punto"; break;
-                    case 4: timeStr = "7 en punto"; break;
-                    case 5: timeStr = "8 en punto"; break;
-                    case 6: timeStr = "9 en punto"; break;
-                    case 7: timeStr = "10 en punto"; break;
-                    case 8: timeStr = "11 en punto"; break;
-                    case 9: timeStr = "12 en punto"; break;
-                    case 10: timeStr = "1 en punto"; break;
-                    case 11: timeStr = "2 en punto"; break;
-                    default: timeStr = "direccion desconocida"; break;
-                }
-                std::cout << "direccion: " << timeStr << std::endl;
-                std::cout << "--------------------------" << std::endl;
+                // Guardar la detección
+                detections.push_back({ objPosition, 1.0f });  // El punto se desvanece en 1 segundo
             }
         }
+    }
+}
+
+void Radar::drawDetectionGrid(sf::RenderWindow& window) {
+    const int gridSize = 20;
+    const int gridWidth = 400;
+    const int gridHeight = 600;
+    const sf::Vector2f gridPosition(800, 0);
+
+    sf::RectangleShape line(sf::Vector2f(gridWidth, 1));
+    line.setFillColor(sf::Color(50, 255, 50));
+    for (int y = 0; y <= gridHeight; y += gridSize) {
+        line.setSize(sf::Vector2f(gridWidth, 1));
+        line.setPosition(gridPosition.x, gridPosition.y + y);
+        window.draw(line);
+    }
+
+    line.setSize(sf::Vector2f(1, gridHeight));
+    for (int x = 0; x <= gridWidth; x += gridSize) {
+        line.setPosition(gridPosition.x + x, gridPosition.y);
+        window.draw(line);
+    }
+
+    for (const auto& detection : detections) {
+        sf::CircleShape detectionPoint(5);
+        detectionPoint.setFillColor(sf::Color(255, 0, 0, static_cast<sf::Uint8>(detection.timer * 255)));
+        detectionPoint.setOrigin(5, 5);
+
+        sf::Vector2f relativePosition = detection.position - position;
+        relativePosition *= (gridWidth / (2 * radius));
+        relativePosition += sf::Vector2f(gridWidth / 2, gridHeight / 2);
+
+        detectionPoint.setPosition(gridPosition + relativePosition);
+        window.draw(detectionPoint);
     }
 }
