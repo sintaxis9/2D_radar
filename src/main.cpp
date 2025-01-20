@@ -6,7 +6,7 @@
 #include "../include/Object.h"
 
 int main() {
-    sf::RenderWindow window(sf::VideoMode(1200, 600), "RADAR 2D"); /
+    sf::RenderWindow window(sf::VideoMode(1200, 600), "RADAR 2D");
     std::srand(static_cast<unsigned>(std::time(nullptr)));
     Radar radar(sf::Vector2f(300, 300), 200);
 

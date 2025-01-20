@@ -3,7 +3,9 @@
 #include <cmath>
 
 Radar::Radar(sf::Vector2f position, float radius)
-    : position(position), radius(radius), scanAngle(0) {
+    : position(position), radius(radius), scanAngle(0),
+      detectionGrid(sf::Vector2f(800, 0), sf::Vector2f(400, 600), 20) {
+
     radarPoint.setRadius(5);
     radarPoint.setFillColor(sf::Color::Red);
     radarPoint.setOrigin(5, 5);
@@ -21,15 +23,7 @@ void Radar::update(float deltaTime) {
         scanAngle -= 360.0f;
     }
     radarLine.setRotation(scanAngle);
-
-    for (auto& detection : detections) {
-        detection.timer -= deltaTime;
-    }
-
-    detections.erase(
-        std::remove_if(detections.begin(), detections.end(),
-                       [](const Detection& d) { return d.timer <= 0; }),
-        detections.end());
+    detectionGrid.update(deltaTime);
 }
 
 void Radar::draw(sf::RenderWindow& window) {
@@ -51,43 +45,12 @@ void Radar::scan(const std::vector<Object>& objects) {
             float angleDifference = std::fmod(angleToObj - rayAngle, 2 * M_PI);
 
             if (std::abs(angleDifference) < 0.1f) {
-                // Guardar la detección
-                detections.push_back({ objPosition, 1.0f });  // El punto se desvanece en 1 segundo
+                detectionGrid.addDetection(objPosition - position, 1.0f); // Agregar detección
+                std::cout << "colision detectada a " << distance << " unidades" << std::endl;
             }
         }
     }
 }
-
 void Radar::drawDetectionGrid(sf::RenderWindow& window) {
-    const int gridSize = 20;
-    const int gridWidth = 400;
-    const int gridHeight = 600;
-    const sf::Vector2f gridPosition(800, 0);
-
-    sf::RectangleShape line(sf::Vector2f(gridWidth, 1));
-    line.setFillColor(sf::Color(50, 255, 50));
-    for (int y = 0; y <= gridHeight; y += gridSize) {
-        line.setSize(sf::Vector2f(gridWidth, 1));
-        line.setPosition(gridPosition.x, gridPosition.y + y);
-        window.draw(line);
-    }
-
-    line.setSize(sf::Vector2f(1, gridHeight));
-    for (int x = 0; x <= gridWidth; x += gridSize) {
-        line.setPosition(gridPosition.x + x, gridPosition.y);
-        window.draw(line);
-    }
-
-    for (const auto& detection : detections) {
-        sf::CircleShape detectionPoint(5);
-        detectionPoint.setFillColor(sf::Color(255, 0, 0, static_cast<sf::Uint8>(detection.timer * 255)));
-        detectionPoint.setOrigin(5, 5);
-
-        sf::Vector2f relativePosition = detection.position - position;
-        relativePosition *= (gridWidth / (2 * radius));
-        relativePosition += sf::Vector2f(gridWidth / 2, gridHeight / 2);
-
-        detectionPoint.setPosition(gridPosition + relativePosition);
-        window.draw(detectionPoint);
-    }
+    detectionGrid.draw(window);
 }

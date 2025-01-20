@@ -4,11 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "Object.h"
-
-struct Detection {
-    sf::Vector2f position;
-    float timer;
-};
+#include "Grid.h"
 
 class Radar {
 public:
@@ -26,8 +22,7 @@ private:
 
     sf::CircleShape radarPoint;
     sf::RectangleShape radarLine;
-
-    std::vector<Detection> detections;
+    Grid detectionGrid;
 };
 
 #endif
