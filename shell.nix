@@ -10,7 +10,7 @@ pkgs.mkShell {
   ];
 
   shellHook = ''
-    echo "Generando archivo .clangd dinámico..."
+    echo "generando .clangd"
 
     echo "CompileFlags:" > .clangd
     echo "  Add:" >> .clangd
@@ -21,6 +21,6 @@ pkgs.mkShell {
     echo "  MissingIncludes: Strict" >> .clangd
     echo "  UnusedIncludes: Strict" >> .clangd
 
-    echo "Archivo .clangd generado con éxito."
+    echo ".clangd generado."
   '';
 }
