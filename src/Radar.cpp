@@ -33,20 +33,32 @@ void Radar::draw(sf::RenderWindow& window) {
 
 void Radar::scan(const std::vector<Object>& objects) {
     for (const auto& obj : objects) {
-        float rayAngle = scanAngle * M_PI / 180.0f;
-
         sf::Vector2f objPosition = obj.getPosition();
         float dx = objPosition.x - position.x;
         float dy = objPosition.y - position.y;
         float distance = std::sqrt(dx * dx + dy * dy);
 
         if (distance <= radius) {
+            if (distance < 1e-3) {
+                detectionGrid.addDetection(objPosition - position, 1.0f);
+                std::cout << "Objeto detectado en el centro" << std::endl;
+                continue;
+            }
+
+            float rayAngle = scanAngle * M_PI / 180.0f;
             float angleToObj = std::atan2(dy, dx);
-            float angleDifference = std::fmod(angleToObj - rayAngle, 2 * M_PI);
+            float angleDifference = angleToObj - rayAngle;
+
+            angleDifference = std::fmod(angleDifference, 2 * M_PI);
+            if (angleDifference > M_PI) {
+                angleDifference -= 2 * M_PI;
+            } else if (angleDifference < -M_PI) {
+                angleDifference += 2 * M_PI;
+            }
 
             if (std::abs(angleDifference) < 0.1f) {
-                detectionGrid.addDetection(objPosition - position, 1.0f); // Agregar detección
-                std::cout << "colision detectada a " << distance << " unidades" << std::endl;
+                detectionGrid.addDetection(objPosition - position, 1.0f);
+                std::cout << "Detección a " << distance << " unidades" << std::endl;
             }
         }
     }

@@ -13,8 +13,8 @@ int main() {
     std::vector<Object> objects;
     for (int i = 0; i < 10; ++i) {
         sf::Vector2f randomPosition(
-            std::rand() % 600,
-            std::rand() % 600
+            std::rand() % 400,
+            std::rand() % 400
         );
         float randomRadius = 10 + std::rand() % 20;
         objects.push_back(Object("objeto" + std::to_string(i + 1), randomPosition, randomRadius));

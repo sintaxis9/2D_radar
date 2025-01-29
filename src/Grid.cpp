@@ -1,9 +1,19 @@
 #include "../include/Grid.h"
+#include "SFML/System/Vector2.hpp"
+#include <cmath>
 
 Grid::Grid(sf::Vector2f position, sf::Vector2f size, int cellSize)
     : position(position), size(size), cellSize(cellSize) {}
 
 void Grid::addDetection(sf::Vector2f position, float lifetime) {
+    const float minDistance = 10.0f;
+    for (const auto& detection : detections){
+        sf:sf::Vector2f delta = detection.position - position;
+        float distance = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+        if (distance < minDistance){
+            return;
+        }
+    }
     detections.push_back({position, lifetime});
 }
 
@@ -22,7 +32,7 @@ void Grid::draw(sf::RenderWindow& window) {
     sf::RectangleShape line;
 
     line.setSize(sf::Vector2f(size.x, 1));
-    line.setFillColor(sf::Color(50, 255, 50));
+    line.setFillColor(sf::Color(50, 255, 50, 100));
     for (int y = 0; y <= size.y; y += cellSize) {
         line.setPosition(position.x, position.y + y);
         window.draw(line);
