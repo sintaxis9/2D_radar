@@ -1,10 +1,20 @@
 #include "../include/Radar.h"
+#include "SFML/Config.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include <iostream>
 #include <cmath>
 
 Radar::Radar(sf::Vector2f position, float radius)
     : position(position), radius(radius), scanAngle(0),
+      isDetecting(false), blinkTimer(0.0f),
       detectionGrid(sf::Vector2f(800, 0), sf::Vector2f(400, 600), 20) {
+
+    detectionArea.setRadius(radius);
+    detectionArea.setFillColor(sf::Color(50, 255, 50, 50));
+    detectionArea.setOutlineColor(sf::Color::Green);
+    detectionArea.setOutlineThickness(2);
+    detectionArea.setOrigin(radius, radius);
+    detectionArea.setPosition(position);
 
     radarPoint.setRadius(5);
     radarPoint.setFillColor(sf::Color::Red);
@@ -19,19 +29,30 @@ Radar::Radar(sf::Vector2f position, float radius)
 
 void Radar::update(float deltaTime) {
     scanAngle += 90.0f * deltaTime;
-    if (scanAngle >= 360.0f) {
-        scanAngle -= 360.0f;
-    }
+    if (scanAngle >= 360.0f) scanAngle -= 360.0f;
     radarLine.setRotation(scanAngle);
     detectionGrid.update(deltaTime);
+
+    if (isDetecting) {
+        blinkTimer -= deltaTime;
+        float alpha = 50 + 205 * (0.5f + 0.5f * std::sin(blinkTimer * 20.0f));
+        detectionArea.setFillColor(sf::Color(50, 255, 50, static_cast<sf::Uint8>(alpha)));
+        if (blinkTimer <= 0.0f) {
+            isDetecting = false;
+            detectionArea.setFillColor(sf::Color(50, 255, 50, 50));
+        }
+    }
 }
 
 void Radar::draw(sf::RenderWindow& window) {
+    window.draw(detectionArea);
     window.draw(radarPoint);
     window.draw(radarLine);
 }
 
 void Radar::scan(const std::vector<Object>& objects) {
+    bool detected = false;
+
     for (const auto& obj : objects) {
         sf::Vector2f objPosition = obj.getPosition();
         float dx = objPosition.x - position.x;
@@ -41,7 +62,7 @@ void Radar::scan(const std::vector<Object>& objects) {
         if (distance <= radius) {
             if (distance < 1e-3) {
                 detectionGrid.addDetection(objPosition - position, 1.0f);
-                std::cout << "Objeto detectado en el centro" << std::endl;
+                detected = true;
                 continue;
             }
 
@@ -50,19 +71,22 @@ void Radar::scan(const std::vector<Object>& objects) {
             float angleDifference = angleToObj - rayAngle;
 
             angleDifference = std::fmod(angleDifference, 2 * M_PI);
-            if (angleDifference > M_PI) {
-                angleDifference -= 2 * M_PI;
-            } else if (angleDifference < -M_PI) {
-                angleDifference += 2 * M_PI;
-            }
+            if (angleDifference > M_PI) angleDifference -= 2 * M_PI;
+            else if (angleDifference < -M_PI) angleDifference += 2 * M_PI;
 
             if (std::abs(angleDifference) < 0.1f) {
                 detectionGrid.addDetection(objPosition - position, 1.0f);
-                std::cout << "Detección a " << distance << " unidades" << std::endl;
+                detected = true;
             }
         }
     }
+
+    if (detected) {
+        isDetecting = true;
+        blinkTimer = 1.0f;
+    }
 }
+
 void Radar::drawDetectionGrid(sf::RenderWindow& window) {
     detectionGrid.draw(window);
 }

@@ -5,6 +5,7 @@
 #include <vector>
 #include "Object.h"
 #include "Grid.h"
+#include "SFML/Graphics/CircleShape.hpp"
 
 class Radar {
 public:
@@ -21,8 +22,12 @@ private:
     float scanAngle;
 
     sf::CircleShape radarPoint;
+    sf::CircleShape detectionArea;
     sf::RectangleShape radarLine;
     Grid detectionGrid;
+
+    bool isDetecting;
+    float blinkTimer;
 };
 
 #endif
